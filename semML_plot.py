@@ -1,9 +1,10 @@
+import re
 import random
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib
+import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 
 # Seed for reproducibility
@@ -18,6 +19,11 @@ clusters_spec = {
     "Wheat bread": {"mean": (0.55, 120), "std": (0.03, 10), "count": 50},
 }
 
+# threshold t for conflicting clusters
+t = 1.4
+
+
+# Data functions
 
 def get_cluster_colors(num_clusters):
     """
@@ -41,17 +47,18 @@ def generate_data(clusters):
 
     return data, labels
 
+
 def standardize_data(data):
-    # Kombiniere Daten zu einem 2D-Array
+    # Combine data into a 2D array
     x_all = np.concatenate([d[0] for d in data])
     y_all = np.concatenate([d[1] for d in data])
-    points = np.column_stack((x_all, y_all))  # Daten in (n_samples, 2)-Format
+    points = np.column_stack((x_all, y_all))
 
-    # Standardisierung der Daten
+    # Standardisation of data
     scaler = StandardScaler()
     points_scaled = scaler.fit_transform(points)
 
-    # Zerlege standardisierte Daten zurück in getrennte Listen
+    # Break down standardised data back into separate lists
     standardized_data = []
     start = 0
     for d in data:
@@ -62,7 +69,13 @@ def standardize_data(data):
     return standardized_data, scaler
 
 
-def plot_data(data_points, color_map, title="Scatter Plot of Bakery Data"):
+# PLot functions
+
+def sanitize_filename(filename):
+    return re.sub(r'[<>:"/\\|?*\n\r\t]', '', filename).strip()
+
+
+def plot_data(data_points, color_map, title="Plot of Bakery Data"):
     """
     Plots the scatter plot of the data points.
     """
@@ -80,6 +93,8 @@ def plot_data(data_points, color_map, title="Scatter Plot of Bakery Data"):
     cbar = plt.colorbar(scatter, ax=ax, orientation='horizontal', pad=0)
     cbar.set_label("Brown Scale (0 to 1)")
 
+    plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+    plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
     plt.show()
 
 
@@ -113,6 +128,8 @@ def plot_clusters(data_points, clusters, cluster_colors, color_map, title="Clust
     cbar = plt.colorbar(scatter, ax=ax, orientation='horizontal', pad=0)
     cbar.set_label("Brown Scale (0 to 1)")
 
+    plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+    plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
     plt.show()
 
 
@@ -123,11 +140,18 @@ def plot_kmeans_results(data_points, cluster_labels, centers, title="K-Means Clu
     x_all = np.concatenate([d[0] for d in data_points])
     y_all = np.concatenate([d[1] for d in data_points])
 
-    # Scatterplot der Datenpunkte mit Clusterzuweisungen
+    # Scatterplot of the data points with cluster assignments
     fig, ax = plt.subplots(figsize=(10, 8))
-    scatter = ax.scatter(x_all, y_all, c=cluster_labels, cmap="tab10", s=80, edgecolor='k')
 
-    # Markiere die Zentren
+    # Plot each cluster separately to assign labels
+    unique_clusters = np.unique(cluster_labels)
+    cluster_colors = get_cluster_colors(len(unique_clusters))
+
+    for cluster, color in zip(unique_clusters, cluster_colors):
+        cluster_points = (x_all[cluster_labels == cluster], y_all[cluster_labels == cluster])
+        ax.scatter(*cluster_points, label=f"Cluster {int(cluster)}", color=color, s=80, edgecolor='k')
+
+    # Mark the centroids
     ax.scatter(centers[:, 0], centers[:, 1], c='red', marker='x', s=200, label="Centroids")
 
     ax.set_xlabel("Brown Scale (0 to 1)")
@@ -135,11 +159,77 @@ def plot_kmeans_results(data_points, cluster_labels, centers, title="K-Means Clu
     ax.set_title(title)
     ax.legend()
     plt.grid(alpha=0.3)
+
+    plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+    plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
     plt.show()
 
 
-#data, _ = generate_data(clusters_spec)
+def plot_clusters_with_conflicts(centroids, clusters, conflicts, data_points, title="Clusters with Conflicts"):
+    """
+    Plots the clusters and highlights conflicting centroids.
+    """
+    fig, ax = plt.subplots(figsize=(10, 8))
 
+    # Scatter plot of all data points
+    cluster_colors = get_cluster_colors(len(centroids))
+
+    for cluster_idx, color in zip(range(len(centroids)), cluster_colors):
+        cluster_points = data_points[np.array(clusters) == cluster_idx]
+        ax.scatter(cluster_points[:, 0], cluster_points[:, 1], color=color, label=f"Cluster {cluster_idx}")
+
+    # Plot all centroids
+    ax.scatter(centroids[:, 0], centroids[:, 1], color="black", marker="x", s=100, label="Centroids")
+
+    # Highlight conflicting centroids
+    for conflict in conflicts:
+        ax.scatter(centroids[conflict, 0], centroids[conflict, 1], color="red", marker="o", s=150,
+                   label=f"Conflicting Centroid {conflict}")
+
+    ax.set_title(title)
+    ax.set_xlabel("Brown scale (standardised)")
+    ax.set_ylabel("Area (standardised)")
+    ax.legend(loc="best")
+    ax.grid(alpha=0.3)
+
+    plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+    plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
+    plt.show()
+
+
+def plot_clusters_with_mega_cluster(centroids, clusters, mega_cluster, data_points, title="Clusters with Mega Cluster"):
+    """
+    Plots the clusters and highlights the mega cluster.
+    """
+    fig, ax = plt.subplots(figsize=(10, 8))
+
+    # Scatter plot of all data points
+    cluster_colors = get_cluster_colors(len(centroids))
+
+    for cluster_idx, color in zip(range(len(centroids)), cluster_colors):
+        cluster_points = data_points[np.array(clusters) == cluster_idx]
+        ax.scatter(cluster_points[:, 0], cluster_points[:, 1], color=color, label=f"Cluster {cluster_idx}")
+
+    # Plot all centroids
+    ax.scatter(centroids[:, 0], centroids[:, 1], color="black", marker="x", s=100, label="Centroids")
+
+    # Highlight mega cluster
+    mega_cluster = np.array(mega_cluster)  # Ensure it's an array for easy handling
+    ax.scatter(mega_cluster[:, 0], mega_cluster[:, 1], color="gold", marker="o", s=150, alpha=0.6,
+               label="Mega Cluster")
+
+    ax.set_title(title)
+    ax.set_xlabel("Brown scale (standardised)")
+    ax.set_ylabel("Area (standardised)")
+    ax.legend(loc="best")
+    ax.grid(alpha=0.3)
+
+    plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+    plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
+    plt.show()
+
+
+# K-Means
 
 def rand_init(data_points, k, random_state):
     np.random.seed(random_state)
@@ -149,24 +239,24 @@ def rand_init(data_points, k, random_state):
 
 def kmeans_plus_plus_init(data_points, k, random_state):
     """
-    Initialisiert Clusterzentren mit dem K-Means++ Algorithmus.
-    Gibt die Indizes der ausgewählten Clusterzentren zurück.
+    Initialises cluster centres with the K-Means++ algorithm.
+    Returns the indices of the selected cluster centres.
     """
     np.random.seed(random_state)
 
-    # 1. Wähle das erste Zentrum zufällig aus den Datenpunkten
+    # Choose the first centre at random from the data points
     centers_indices = [np.random.choice(data_points.shape[0])]
 
-    # 2. Wiederhole die Auswahl der Zentren
+    # Repeat the selection of centres
     for _ in range(1, k):
-        # Berechne die Abstände jedes Punktes zum nächsten Zentrum
+        # Calculate the distances from each point to the nearest centre
         distances = np.min(np.linalg.norm(data_points[:, np.newaxis] - data_points[centers_indices], axis=2), axis=1)
 
-        # Wähle den nächsten Punkt mit einer Wahrscheinlichkeit proportional zum Quadrat des Abstands
+        # Select the next point with a probability proportional to the square of the distance
         probs = distances ** 2
-        probs /= probs.sum()  # Normiere die Wahrscheinlichkeiten
+        probs /= probs.sum()
 
-        # Wähle einen neuen Mittelpunkt basierend auf den Wahrscheinlichkeiten
+        # Select a new centre point based on the probabilities
         new_center_index = np.random.choice(data_points.shape[0], p=probs)
         centers_indices.append(new_center_index)
 
@@ -195,31 +285,18 @@ def compute_means(cluster_idx, K, X):
     _, n = np.shape(X)
     centroids = np.empty((K, n))
     for i in range(K):
-        points = X[cluster_idx == i]  # gather points for the cluster i
-        centroids[i] = np.mean(points, axis=0)  # use axis=0 to compute means across points
+        points = X[cluster_idx == i]
+        centroids[i] = np.mean(points, axis=0)
     return centroids
 
 
-def k_means(data_points, k, init_func, random_state=42):
-    data_points = np.array(data_points)
-    n_samples = data_points.shape[0]
-
-    # Ensure that k is never bigger than the number of points
-    k = min(k, n_samples)
-
-    # Initialise cluster centres randomly from the data points
-    centroids = data_points[init_func(data_points, k, random_state)]
-    i = 0
-
+def converge_to_clusters(centroids, k, data_points, i=0):
     while True:
         # Create clusters
         clusters = create_clusters(centroids, k, data_points)
         prev_centroids = centroids
 
-        #plot_kmeans_results(data, clusters, centroids, title=(str(i) + " iteration"))
-
-        # Calculate new cluster centres as the mean value of the associated points
-        # new_centres = np.array([data_points[cluster_labels == k].mean(axis=0) for k in range(k)])
+        # Calculate new cluster centroids as the mean value of the associated points
         centroids = compute_means(clusters, k, data_points)
 
         if np.array_equal(centroids, prev_centroids):
@@ -230,24 +307,123 @@ def k_means(data_points, k, init_func, random_state=42):
     return centroids, clusters
 
 
+def k_means(data_points, k, init_func, random_state=42):
+    data_points = np.array(data_points)
+    n_samples = data_points.shape[0]
+
+    # Ensure that k is never bigger than the number of points
+    k = min(k, n_samples)
+
+    # Initialise cluster centroids with the given init function
+    centroids = data_points[init_func(data_points, k, random_state)]
+    init_centroids = centroids
+    i = 0
+
+    centroids, clusters = converge_to_clusters(centroids, k, data_points, i)
+
+    return centroids, clusters, init_centroids, create_clusters(init_centroids, k, data_points)
+
+
 def run_kmeans_ref(data_points, n_clusters=5, random_state=42):
     """
-    Führt den K-Means Algorithmus auf den gegebenen Datensatz aus.
+        Executes the K-Means algorithm on the given data set.
     """
-    # Kombiniere alle Datenpunkte zu einem 2D-Array
+
+    # Combine all data points into a 2D array
     x_all = np.concatenate([d[0] for d in data_points])
     y_all = np.concatenate([d[1] for d in data_points])
-    points = np.column_stack((x_all, y_all))  # Daten in (n_samples, 2)-Format
+    points = np.column_stack((x_all, y_all))  # Data in (n_samples, 2)-Format
 
-    # Führe den K-Means-Algorithmus aus
+    # Execute K-Means
     kmeans = KMeans(n_clusters=n_clusters, random_state=random_state)
     kmeans.fit(points)
 
-    # Ergebnisse des K-Means
-    labels = kmeans.labels_  # Clusterzuweisungen für jeden Punkt
-    centers = kmeans.cluster_centers_  # Berechnete Clusterzentren
+    return kmeans.cluster_centers_, kmeans.labels_
 
-    return centers, labels
+
+def closest_neighbour(c, centroids):
+    other_centroids = np.array([centroid for centroid in centroids if not np.array_equal(centroid, c)])
+    distances = np.linalg.norm(other_centroids - c, axis=1)
+
+    return other_centroids[np.argmin(distances)]
+
+
+def avg_dist(centroids):
+    # avgDist = 1/k * sum(d(c_i, d_neigh))
+    return 1 / len(centroids) * np.array([np.linalg.norm(c - closest_neighbour(c, centroids)) for c in centroids]).sum()
+
+
+def is_conflicting(c_i, c_neigh, avgDist):
+    return np.linalg.norm(c_i - c_neigh) < (avgDist / t)
+
+
+def get_conflicts(centroids):
+    conflicts = []
+    avg_Dist = avg_dist(centroids)
+
+    for c_idx in range(len(centroids)):
+        c_i = centroids[c_idx]
+        closest = closest_neighbour(c_i, centroids)
+
+        if is_conflicting(c_i, closest, avg_Dist):
+            conflicts.append(c_idx)
+
+    return np.array(conflicts)
+
+
+def cluster_variance(cluster_points):
+    mean_point = np.mean(cluster_points, axis=0)
+    squared_deviations = np.sum((cluster_points - mean_point) ** 2, axis=1)
+
+    # Variance with Bessel correction (n-1)
+    variance = np.sum(squared_deviations) / (cluster_points.shape[0] - 1)
+
+    return variance
+
+
+def get_mega_cluster(k, cluster_idx, data_points):
+    clusters = [[] for _ in range(k)]
+
+    for point, cluster_index in zip(data_points, cluster_idx):
+        clusters[int(cluster_index)].append(point)
+
+    return clusters[np.argmax([cluster_variance(np.array(cluster)) for cluster in clusters])]
+
+
+def k_means_improved(data_points, k, init_func, random_state=42, iterations=10):
+    data_points = np.array(data_points)
+    n_samples = data_points.shape[0]
+
+    # Ensure that k is never bigger than the number of points
+    k = min(k, n_samples)
+
+    # Initialise cluster centroids wth the given init-function
+    centroids = data_points[init_func(data_points, k, random_state)]
+    init_centroids = centroids
+
+    clusters = []
+
+    for i in range(iterations):
+        centroids, clusters = converge_to_clusters(centroids, k, data_points, i)
+        conflicts = get_conflicts(centroids)
+        mega_cluster = get_mega_cluster(k, clusters, data_points)
+
+        print("Conflicting clusters: {}".format(conflicts))
+        if len(conflicts) == 0:
+            break
+
+        plot_clusters_with_conflicts(centroids, clusters, conflicts, data_points,
+                                     "Cluster with conflicts; iteration: {}".format(i))
+        plot_clusters_with_mega_cluster(centroids, clusters, mega_cluster, data_points,
+                                        "Mega cluster; iteration: {}".format(i))
+
+        conflicting_centroid = random.choice(conflicts)
+        random_instance = random.choice(mega_cluster)
+
+        if i < iterations - 1:
+            centroids[conflicting_centroid] = random_instance
+
+    return centroids, clusters, init_centroids, create_clusters(init_centroids, k, data_points)
 
 
 # Main Code
@@ -257,6 +433,7 @@ if __name__ == "__main__":
     # Generate the data
     data, _ = generate_data(clusters_spec)
     std_data, scaler = standardize_data(data)
+    flat_data = [(x, y) for x_array, y_array in std_data for x, y in zip(x_array, y_array)]
 
     # Define colormap for Brown Scale
     cmap = matplotlib.colormaps["YlOrBr"]
@@ -268,21 +445,40 @@ if __name__ == "__main__":
     plot_clusters(data, clusters_spec, get_cluster_colors(len(clusters_spec)), cmap, title="Clustered Bakery Products")
 
     # Calculate Clusters with k-means
-    # flat data
-    flat_data = [(x, y) for x_array, y_array in std_data for x, y in zip(x_array, y_array)]
-    centroids, clusters = k_means(flat_data, len(clusters_spec), rand_init, rand_state)
+    centroids, clusters, init_centroids, init_clusters = k_means(flat_data,
+                                                                 len(clusters_spec),
+                                                                 rand_init,
+                                                                 rand_state)
 
     # Plot calculated clusters
+    plot_kmeans_results(data, init_clusters, scaler.inverse_transform(init_centroids), title="K-Means Init")
     plot_kmeans_results(data, clusters, scaler.inverse_transform(centroids), title="K-Means Clustering Results")
 
     # Calculate Clusters with K-means++
-    centroids, clusters = k_means(flat_data, len(clusters_spec), kmeans_plus_plus_init, rand_state)
+    centroids_plus, clusters_plus, init_centroids_plus, init_clusters_plus = k_means(flat_data,
+                                                                                     len(clusters_spec),
+                                                                                     kmeans_plus_plus_init,
+                                                                                     rand_state)
 
     # Plot calculated clusters with K-means++
-    plot_kmeans_results(data, clusters, scaler.inverse_transform(centroids), title="K-Means++ Clustering Results")
+    plot_kmeans_results(data, init_clusters_plus, scaler.inverse_transform(init_centroids_plus), title="K-Means++ Init")
+    plot_kmeans_results(data, clusters_plus, scaler.inverse_transform(centroids_plus),
+                        title="K-Means++ Clustering Results")
+
+    # Calculate Clusters with K-means improved
+    centroids_imp, clusters_imp, init_centroids_imp, init_clusters_imp = k_means_improved(flat_data,
+                                                                                          len(clusters_spec),
+                                                                                          rand_init,
+                                                                                          rand_state)
+
+    # Plot calculated clusters with K-means improved
+    plot_kmeans_results(data, init_clusters_imp, scaler.inverse_transform(init_centroids_imp),
+                        title="K-means improved Init")
+    plot_kmeans_results(data, clusters_imp, scaler.inverse_transform(centroids_imp),
+                        title="K-means improved Clustering Results")
 
     # Calculate Clusters with K-means reference impl
-    centroids, clusters = run_kmeans_ref(std_data, len(clusters_spec), rand_state)
+    # centroids, clusters = run_kmeans_ref(std_data, len(clusters_spec), rand_state)
 
     # Plot calculated clusters with reference impl
-    plot_kmeans_results(data, clusters, scaler.inverse_transform(centroids), title="Ref Clustering Results")
+    # plot_kmeans_results(data, clusters, scaler.inverse_transform(centroids), title="Ref Clustering Results")
