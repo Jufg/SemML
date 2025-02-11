@@ -1,5 +1,7 @@
 .idea
 plots
+out
+.ipynb_checkpoints
 
 *.svg
 *.png
