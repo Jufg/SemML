@@ -3,5 +3,10 @@ plots
 out
 .ipynb_checkpoints
 
+# latexindent
+indent.log
+*.bak[0-9]*
+
+# graphics
 *.svg
 *.png
