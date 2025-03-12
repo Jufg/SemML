@@ -41,6 +41,7 @@
 
 \usepackage{eso-pic}
 \usepackage{xspace}
+\usepackage{enumitem}
 
 \typeout{SemML 8.5 x 11-Inch Proceedings Style `semml.sty'.}
 
@@ -154,6 +155,15 @@ Paper ID \semmlPaperID \fi
 \def\semmlsubsect#1{\semmlsubsection{\hskip -1em.~#1}}
 \def\subsection{\@ifstar\semmlssubsect\semmlsubsect}
 
+% Third level heading
+\def\semmlsubsubsection{\@startsection{subsubsection}{3}{\z@}%
+   {6pt plus 1pt minus 1pt}{0pt}
+   {\bf\normalsize}}
+\def\semmlsubsubsect#1{\noindent\semmlsubsubsection*{#1.\enspace}}
+\def\subsubsection{\semmlsubsubsect}
+
+
+
 %% --------- Page background marks: Ruler and confidentiality
 
 % ----- define vruler
@@ -247,3 +257,6 @@ Paper ID \semmlPaperID \fi
 \makeatother
 
 % ---------------------------------------------------------------
+% Other personal styles
+
+\setlist[itemize]{noitemsep, topsep=0pt}
