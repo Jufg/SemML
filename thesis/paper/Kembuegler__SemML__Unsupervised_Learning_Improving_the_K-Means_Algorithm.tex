@@ -8,6 +8,7 @@
 \usepackage{amssymb}
 
 % Include other packages here, before hyperref.
+\usepackage{amsthm}
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
@@ -160,10 +161,10 @@ Overall, clustering algorithms can be classified into two categories:
 \textit{hierarchical} and \textit{partitional} algorithms. Hierarchical
 algorithms build clusters by recursively merging related data points, whereas
 partitional algorithms divide the dataset into distinct clusters
-simultaneously~\cite{Jain2010651}.
+simultaneously~\cite{Ezugwu2022104743,Jain2010651}.
 
 Hierarchical clustering methods include \textit{agglomerative} approaches (such
-as single-, complete-, and average-linkage) and \textit{divisive} (e.g.
+as single-, complete-, and average-linkage) and \textit{divisive} (e.g.,
 monothetic and polythetic) clustering. Partitional techniques, on the other
 hand, encompass algorithms such as \textit{K-Means}, \textit{Genetic
     Algorithms}, \textit{Gaussian Mixture Models}, \textit{Fuzzy C-Means}, and
@@ -173,59 +174,46 @@ hand, encompass algorithms such as \textit{K-Means}, \textit{Genetic
 
 \subsection{Types of Clusters}\label{subsec:types-of-clusters}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+Kapil Joshi \etal~\cite{Joshi2015} divide clusters into four categories.
+%TODO: Proof this
+In the general literature on cluster analysis, it is discussed that the choice
+of the appropriate algorithm depends on the underlying cluster structure
+    [further sources]. For example, density-based methods such as DBSCAN are
+particularly suitable for non-convex clusters, while k-Means works particularly
+well for spherical clusters.
 
-%------------------------------------------------------------------------
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[subsubsection]
+\subsubsection{Definitions of cluster types}
 
-\subsubsection{Well-separated clusters}
+\begin{definition}[Well-separated clusters]\label{def:well-separated}
+    A point in a cluster is closer or more similar to any point in the same cluster
+    than to a point in another cluster~\cite{Joshi2015}.
+\end{definition}
 
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
+\begin{definition}[Centre-based clusters]\label{def:centre-based}
+    A point in a cluster is closer or more similar to the ‘centre’ of this cluster
+    than to the centre of another cluster~\cite{Joshi2015}.
+\end{definition}
 
-%------------------------------------------------------------------------
+\begin{definition}[Contiguous clusters]\label{def:contiguous}
+    A point in a cluster is closer to one or more points in the same cluster than to
+    any other point not in the cluster~\cite{Joshi2015}.
+\end{definition}
 
-\subsubsection{Centre-based clusters}
-
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
-
-%------------------------------------------------------------------------
-
-\subsubsection{Contiguous clusters}
-
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
-
-%------------------------------------------------------------------------
-
-\subsubsection{Density-based clusters}
-
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
+\begin{definition}[Density-based clusters]\label{def:density-based}
+    A cluster is a dense region of points separated from other high-density
+    regions by low-density regions~\cite{Joshi2015}.
+\end{definition}
 
 %------------------------------------------------------------------------
 
 \section{K-Means}\label{sec:k-means}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+In contrast to other algorithms, K-Means was discovered independently in
+various research fields, first by Steinhaus (1956) and Lloyd (proposed 1957;
+published 1982) and later by Ball and Hall (1965) and MacQueen
+(1967)~\cite{Jain2010651}.
 
 %------------------------------------------------------------------------
 
