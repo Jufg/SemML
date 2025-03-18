@@ -9,11 +9,14 @@
 
 % Include other packages here, before hyperref.
 \usepackage{amsthm}
+\usepackage{listings}
+\usepackage{braket}
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
 % run, let it finish, and you should be clear).
 \usepackage[breaklinks=true,bookmarks=false]{hyperref}
+\usepackage{lstmisc}
 
 \semmlfinalcopy % *** Uncomment this line for the final submission
 
@@ -117,6 +120,7 @@ and \textit{unsupervised learning}~\cite{deuschle2019}.
 
 %-------------------------------------------------------------------------
 % TODO: Check Plagiat on kushawahAndYadav2016
+
 \subsubsection{Supervised Learning}\label{subsubsec:supervised-learning}
 
 A supervised training technique is the technique where we consider both the
@@ -184,26 +188,31 @@ well for spherical clusters.
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[subsubsection]
-\subsubsection{Definitions of cluster types}
 
-\begin{definition}[Well-separated clusters]\label{def:well-separated}
+\subsubsection{Definitions of cluster types~\cite{Joshi2015}}
+
+\begin{definition}[Well-separated clusters]
+    \label{def:well-separated}
     A point in a cluster is closer or more similar to any point in the same cluster
-    than to a point in another cluster~\cite{Joshi2015}.
+    than to a point in another cluster.
 \end{definition}
 
-\begin{definition}[Centre-based clusters]\label{def:centre-based}
+\begin{definition}[Centre-based clusters]
+    \label{def:centre-based}
     A point in a cluster is closer or more similar to the ‘centre’ of this cluster
-    than to the centre of another cluster~\cite{Joshi2015}.
+    than to the centre of another cluster.
 \end{definition}
 
-\begin{definition}[Contiguous clusters]\label{def:contiguous}
+\begin{definition}[Contiguous clusters]
+    \label{def:contiguous}
     A point in a cluster is closer to one or more points in the same cluster than to
-    any other point not in the cluster~\cite{Joshi2015}.
+    any other point not in the cluster.
 \end{definition}
 
-\begin{definition}[Density-based clusters]\label{def:density-based}
+\begin{definition}[Density-based clusters]
+    \label{def:density-based}
     A cluster is a dense region of points separated from other high-density
-    regions by low-density regions~\cite{Joshi2015}.
+    regions by low-density regions.
 \end{definition}
 
 %------------------------------------------------------------------------
@@ -215,14 +224,79 @@ various research fields, first by Steinhaus (1956) and Lloyd (proposed 1957;
 published 1982) and later by Ball and Hall (1965) and MacQueen
 (1967)~\cite{Jain2010651}.
 
+Despite variations in their implementation, all K-Means algorithms follow the
+same fundamental procedure for partitioning data into clusters. Given an input
+dataset represented as an $n \times d$ matrix — where $n$ is the number of data
+points and $d$ the number of features — K-Means requires the number of desired
+clusters, a similarity metric and an initialization strategy. The algorithm
+proceeds as follows:
+\begin{enumerate}
+    \item Select the initial $k$ cluster centers (centroids) based on the initialization
+          method. This selection of centroids now acts as a starting point for the
+          further procedure.
+    \item Assign each data point to the nearest cluster based on our similarity metric
+          (e.g., Euclidean norm).
+    \item Update the centroids based on the assignments from step 2, where we select the
+          mean of all points assigned to a cluster as the new centroid of that cluster.
+    \item Repeat steps 2 and 3 until the clusters converge. So the data points no longer
+          change their assigned clusters within an iteration.
+\end{enumerate}
+An illustration of this process is provided in Figure
+~\ref{fig:kmeans-procedure}. However, they differ subtly in their objectives
+and approaches. For example, unlike Lloyd's algorithm, which updates centroids
+only after all data points have been reassigned, MacQueen's algorithm performs
+incremental updates, adjusting the affected cluster’s centroid immediately when
+a data point moves from one cluster to another~\cite{TQMP9-1-15}.
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=0.8\linewidth]{figures/K-Means procedure}
+    \end{center}
+    \caption{K-Means procedure visualised \cite{Amidi2018}.}
+    \label{fig:kmeans-procedure}
+\end{figure}
+
 %------------------------------------------------------------------------
 
-\subsection{Procedure and Lloyd's algorithm}\label{subsec:procedure-and-lloyd's-algorithm}
+\subsection{Lloyd's algorithm}\label{subsec:procedure-and-lloyd's-algorithm}
 
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
+One of the most widely used implementations of K-Means is Lloyd’s
+algorithm~\cite{deuschle2019}, which iteratively refines cluster assignments
+and centroids through a simple yet effective approach. Given a dataset
+$X=\set{x_i}_{i=1}^n$ of $d$-dimensional points, the goal is to iteratively
+refine the centroids $C=\Set{\mu_i}_{i=1}^k$ to partition the data into $k$
+clusters. The assignment of data points to clusters is encoded by a
+responsibility vector $R\in\Set{0,1}^{n\times k}$ , where $r_{nk}=1$ indicates
+that point $x_i$ belongs to cluster $k$, and $0$ otherwise.
+
+To quantify clustering quality, we define the loss function, also known as the
+\textit{Sum of Squares within Clusters (SSW)}, as the sum of squared distances
+between data points and their assigned centroids:
+\begin{equation}
+    \label{eq:lloyds-loss}
+    \mathcal{L} = \sum_{n=1}^{N} \sum_{k=1}^{K} r_{nk} \|x_n - \mu_k\|^2.
+\end{equation}
+To minimize $\mathcal{L}$, Lloyd's algorithm iterates between two steps:
+\begin{enumerate}
+    \item \textbf{Assignment Step:} Each data point is assigned to the nearest centroid by updating the responsibility vector:
+          \begin{equation}
+              \label{eq:lloyds-res-vec}
+              r_{nc} =
+              \begin{cases}
+                  1, & \text{if } c = \underset{c'}{\arg\min} \|x_n - \mu_{c'}\| \\
+                  0, & \text{otherwise.}
+              \end{cases}
+          \end{equation}
+    \item \textbf{Update Step:} The cluster centroids are recomputed as the mean of all assigned points:
+          \begin{equation}
+              \label{eq:min-lloyds-loss}
+              \mu_c' = \frac{\sum_{n=1}^{N} r_{nc} x_n}{\sum_{n=1}^{N} r_{nc}}.
+          \end{equation}
+\end{enumerate}
+These steps repeat until the assignments $R$ no longer change, indicating
+convergence. Since the loss function $\mathcal{L}$ is non-increasing at each
+iteration, the algorithm is guaranteed to reach a local minimum, though not
+necessarily the global optimum.
 
 %------------------------------------------------------------------------
 
