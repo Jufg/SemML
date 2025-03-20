@@ -178,13 +178,13 @@ hand, encompass algorithms such as \textit{K-Means}, \textit{Genetic
 
 \subsection{Types of Clusters}\label{subsec:types-of-clusters}
 
-Kapil Joshi \etal~\cite{Joshi2015} divide clusters into four categories.
-%TODO: Proof this
-In the general literature on cluster analysis, it is discussed that the choice
-of the appropriate algorithm depends on the underlying cluster structure
-    [further sources]. For example, density-based methods such as DBSCAN are
-particularly suitable for non-convex clusters, while k-Means works particularly
-well for spherical clusters.
+Kapil Joshi \etal~\cite{Joshi2015} divide clusters into four categories. In the
+general literature on cluster analysis, it is discussed that the choice of the
+appropriate algorithm depends on the underlying cluster
+structure~\cite{Ezugwu2022104743}. For example, density-based methods such as
+DBSCAN are particularly suitable for non-convex clusters~\cite{Bhargav2016},
+while k-Means works particularly well for spherical
+clusters~\cite{Jain2010651}.
 
 \theoremstyle{definition}
 \newtheorem{definition}{Definition}[subsubsection]
@@ -270,13 +270,13 @@ responsibility vector $R\in\Set{0,1}^{n\times k}$ , where $r_{nk}=1$ indicates
 that point $x_i$ belongs to cluster $k$, and $0$ otherwise.
 
 To quantify clustering quality, we define the loss function, also known as the
-\textit{Sum of Squares within Clusters (SSW)}, as the sum of squared distances
-between data points and their assigned centroids:
+\textit{sum-of-squared errors (SSE)}, as the sum of squared distances between
+data points and their assigned centroids:
 \begin{equation}
     \label{eq:lloyds-loss}
     \mathcal{L} = \sum_{n=1}^{N} \sum_{k=1}^{K} r_{nk} \|x_n - \mu_k\|^2.
 \end{equation}
-To minimize $\mathcal{L}$, Lloyd's algorithm iterates between two steps:
+To minimize $\mathcal{L}$, Lloyd's algorithm iterates between two steps~\cite{deuschle2019, FRANTI201995}:
 \begin{enumerate}
     \item \textbf{Assignment Step:} Each data point is assigned to the nearest centroid by updating the responsibility vector:
           \begin{equation}
@@ -290,7 +290,7 @@ To minimize $\mathcal{L}$, Lloyd's algorithm iterates between two steps:
     \item \textbf{Update Step:} The cluster centroids are recomputed as the mean of all assigned points:
           \begin{equation}
               \label{eq:min-lloyds-loss}
-              \mu_c' = \frac{\sum_{n=1}^{N} r_{nc} x_n}{\sum_{n=1}^{N} r_{nc}}.
+              \mu_c' = \frac{\sum_{n=1}^{N} r_{nc} x_n}{\sum_{n=1}^{N} r_{nc}}
           \end{equation}
 \end{enumerate}
 These steps repeat until the assignments $R$ no longer change, indicating
@@ -302,11 +302,61 @@ necessarily the global optimum.
 
 \subsection{Problems and limitations}\label{subsec:problems-and-limitations}
 
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
+\subsubsection{Standardized Data}
 
+%------------------------------------------------------------------------
+
+\subsubsection{Choose $k$}
+
+One of the few adjustable parameters in Lloyd's algorithm, apart from the
+initialization method, is the number of clusters $k$. Examining the loss
+function in Equation~(\ref{eq:lloyds-loss}), we observe that a smaller number
+of clusters generally results in a higher loss, as data points are assigned to
+fewer centroids. Conversely, the loss decreases as $k$ increases, reaching its
+minimum when each data point forms its own cluster. However, this solution is
+not meaningful, as it eliminates the concept of clustering altogether
+~\cite{deuschle2019}. Since there is no universally optimal choice for $k$,
+Jain~\cite{Jain2010651} suggests running the algorithm with multiple values of
+$k$ and selecting the most significant one based on evaluation criteria.
+
+A widely used heuristic for determining $k$ is the \textit{elbow method}. This
+approach involves plotting the loss function against $k$ and identifying the
+point where the decrease in loss slows significantly — forming an 'elbow' in
+the curve (see Figure~\ref{fig:elbow-plot}). The fundamental concept behind
+this method is that above a certain $k$, additional clusters result in
+diminishing returns in loss reduction~\cite{deuschle2019}.
+
+\begin{figure}[t]
+    \begin{center}
+        \includegraphics[width=0.8\linewidth]{figures/elbow_method}
+    \end{center}
+    \caption{Elbow plot using the Mall Customer Segmentation Data~\cite{KaggleMallDataset}.}
+    \label{fig:elbow-plot}
+\end{figure}
+
+%------------------------------------------------------------------------
+
+\subsubsection{Centroid initialization}
+
+The simplest method for initializing centroids is to select them randomly.
+However, as previously discussed, Lloyd’s algorithm converges to a local
+minimum, making the final clustering outcome highly sensitive to the initial
+centroid selection. Consequently, poor initialization can lead to suboptimal
+solutions~\cite{FRANTI201995,Abdullah10601123}.
+
+%TODO: finish
+According to Fränti and Sieranoja\cite{FRANTI201995}, there are two main
+approaches for solving this problem: Firstly, a better initialization and
+secondly, you make several runs and then use the best one.
+\begin{itemize}
+    \item Random points
+    \item Furthest point heuristic
+    \item Sorting heuristic
+    \item Density-based
+    \item Projection-based
+    \item Splitting technique
+\end{itemize}
+However, \textit{"A clear state-of-the-art is missing"}~\cite{FRANTI201995}. One widely used technique is K-Means++.
 %------------------------------------------------------------------------
 
 \subsection{K-Means++}\label{subsec:k-means++}
