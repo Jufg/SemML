@@ -246,7 +246,7 @@ An illustration of this process is provided in Figure
 and approaches. For example, unlike Lloyd's algorithm, which updates centroids
 only after all data points have been reassigned, MacQueen's algorithm performs
 incremental updates, adjusting the affected cluster’s centroid immediately when
-a data point moves from one cluster to another~\cite{TQMP9-1-15}.
+a data point moves from one cluster to another~\cite{Morissette2013}.
 
 \begin{figure}[t]
     \begin{center}
@@ -302,7 +302,14 @@ necessarily the global optimum.
 
 \subsection{Problems and limitations}\label{subsec:problems-and-limitations}
 
-\subsubsection{Standardized Data}
+While K-Means is widely used due to its simplicity and efficiency, it also
+comes with several limitations~\cite{Ezugwu2022104743,
+    FRANTI201995,Jain2010651}. Since K-Means relies on distance calculations,
+standardizing data is often recommended to ensure features contribute equally
+to cluster formation~\cite{Morissette2013}. The algorithm is sensitive to the
+choice of $k$ clusters and centroid initialization, all of which can
+significantly impact clustering performance. In this section, we discuss these
+challenges and common strategies to mitigate them.
 
 %------------------------------------------------------------------------
 
@@ -344,19 +351,32 @@ minimum, making the final clustering outcome highly sensitive to the initial
 centroid selection. Consequently, poor initialization can lead to suboptimal
 solutions~\cite{FRANTI201995,Abdullah10601123}.
 
-%TODO: finish
-According to Fränti and Sieranoja\cite{FRANTI201995}, there are two main
-approaches for solving this problem: Firstly, a better initialization and
-secondly, you make several runs and then use the best one.
+%TODO: Check thsi section
+
+According to Fränti and Sieranoja~\cite{FRANTI201995}, there are two primary
+approaches to overcome the sensitivity of K-Means to centroid initialization:
+\begin{enumerate}
+    \item Improved initialization techniques that strategically select better starting
+          points.
+    \item Multiple runs of the algorithm, selecting the best clustering result based on a
+          predefined criterion.
+\end{enumerate}
+Several initialization heuristics have been proposed, including:
 \begin{itemize}
-    \item Random points
-    \item Furthest point heuristic
-    \item Sorting heuristic
-    \item Density-based
-    \item Projection-based
-    \item Splitting technique
+    \item \textbf{Random points} – Centroids are chosen randomly from the dataset.
+    \item \textbf{Furthest point heuristic} – The first centroid is selected randomly, while
+          subsequent centroids are placed as far as possible from previously chosen ones.
+    \item \textbf{Sorting heuristic} – Data points are sorted based on a specific criterion, such
+          as projection along a principal component, and centroids are initialized
+          accordingly.
+    \item \textbf{Density-based} – Centroids are placed in high-density regions of the data space.
+    \item \textbf{Projection-based} – Initialization is performed by reducing dimensionality and
+          identifying representative points.
+    \item \textbf{Splitting technique} – A small number of centroids are initialized first, and
+          then iteratively split to refine clustering.
 \end{itemize}
-However, \textit{"A clear state-of-the-art is missing"}~\cite{FRANTI201995}. One widely used technique is K-Means++.
+Despite these efforts, \textit{"a clear state-of-the-art is missing"}~\cite{FRANTI201995}, meaning no single method consistently outperforms others across all datasets. However, one widely adopted initialization method is K-Means++, which balances randomness with a distance-based heuristic to improve clustering performance and convergence speed.
+
 %------------------------------------------------------------------------
 
 \subsection{K-Means++}\label{subsec:k-means++}
