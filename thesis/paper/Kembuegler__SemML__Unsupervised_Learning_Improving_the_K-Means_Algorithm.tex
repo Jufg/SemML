@@ -11,6 +11,8 @@
 \usepackage{amsthm}
 \usepackage{listings}
 \usepackage{braket}
+\usepackage{algpseudocodex}
+\usepackage{algorithmicx}
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
@@ -250,7 +252,7 @@ a data point moves from one cluster to another~\cite{Morissette2013}.
 
 \begin{figure}[t]
     \begin{center}
-        \includegraphics[width=0.8\linewidth]{figures/K-Means procedure}
+        \includegraphics[width=0.9\linewidth]{figures/K-Means procedure}
     \end{center}
     \caption{K-Means procedure visualised \cite{Amidi2018}.}
     \label{fig:kmeans-procedure}
@@ -266,7 +268,7 @@ and centroids through a simple yet effective approach. Given a dataset
 $X=\set{x_i}_{i=1}^n$ of $d$-dimensional points, the goal is to iteratively
 refine the centroids $C=\Set{\mu_i}_{i=1}^k$ to partition the data into $k$
 clusters. The assignment of data points to clusters is encoded by a
-responsibility vector $R\in\Set{0,1}^{n\times k}$ , where $r_{nk}=1$ indicates
+responsibility vector $R\in\Set{0,1}^{n\times k}$, where $r_{nk}=1$ indicates
 that point $x_i$ belongs to cluster $k$, and $0$ otherwise.
 
 To quantify clustering quality, we define the loss function, also known as the
@@ -274,7 +276,7 @@ To quantify clustering quality, we define the loss function, also known as the
 data points and their assigned centroids:
 \begin{equation}
     \label{eq:lloyds-loss}
-    \mathcal{L} = \sum_{n=1}^{N} \sum_{k=1}^{K} r_{nk} \|x_n - \mu_k\|^2.
+    \mathcal{L} = \sum_{n=1}^{N} \sum_{c=1}^{k} r_{nc} \|x_n - \mu_c\|^2.
 \end{equation}
 To minimize $\mathcal{L}$, Lloyd's algorithm iterates between two steps~\cite{deuschle2019, FRANTI201995}:
 \begin{enumerate}
@@ -333,7 +335,7 @@ diminishing returns in loss reduction~\cite{deuschle2019}.
 
 \begin{figure}[t]
     \begin{center}
-        \includegraphics[width=0.8\linewidth]{figures/elbow_method}
+        \includegraphics[width=0.9\linewidth]{figures/elbow_method}
     \end{center}
     \caption{Elbow plot using the Mall Customer Segmentation Data~\cite{KaggleMallDataset}.}
     \label{fig:elbow-plot}
@@ -349,7 +351,7 @@ minimum, making the final clustering outcome highly sensitive to the initial
 centroid selection. Consequently, poor initialization can lead to suboptimal
 solutions~\cite{FRANTI201995,Abdullah10601123}.
 
-%TODO: maybe remove the numbering (1) and (3)?
+%TODO: maybe remove the numbering (1) and (2)?
 
 According to Fränti and Sieranoja~\cite{FRANTI201995}, there are two main ways
 to mitigate K-Means’ sensitivity to centroid initialization: (1) using improved
@@ -393,45 +395,127 @@ suboptimal results remain possible~\cite{deuschle2019, Abdullah10601123}.
 
 \section{Statistically improving K-Means}\label{sec:statistically-improving-k-means}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+As noted by Fränti and Sieranoja~\cite{FRANTI201995}, K-Means presents several
+opportunities for optimization. However, a key limitation is that centroids
+struggle to relocate effectively when they are initially placed far from their
+optimal positions. To address this issue, İhsanoğlu and
+Zaval~\cite{Abdullah10601123} propose an initial solution based on simple
+statistical methods, facilitating more efficient centroid movement.
 
 %------------------------------------------------------------------------
 
 \subsection{Identifying issues}\label{subsec:identifying-issues}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+As previously mentioned, one of the main challenges in K-Means is that poorly
+initialized centroids may struggle to reach their optimal positions, if at all.
+This often leads to an uneven distribution of centroids — some regions may
+contain too many, while others are underrepresented~\cite{FRANTI201995}. To
+characterize such imbalances, İhsanoğlu and Zaval~\cite{Abdullah10601123}
+propose separate approaches for \textbf{conflicting clusters} and \textbf{mega
+    clusters}.
+
+\subsubsection{Conflicting Clusters}
+
+This type of cluster arises when multiple centroids are located too close to
+one another, typically indicating redundant clustering in a dense region. To
+detect them, we first compute the average distance between each centroid and
+its nearest neighbour:
+\begin{equation}
+    \label{eq:avgDist}
+    \text{AvgDist} = \frac{1}{k} \sum_{i=1}^{k} d(\mu_i, \mu_{\text{neigh}})
+\end{equation}
+Here, $k$ is the number of clusters, $d(x,y)$ is the distance function (e.g.
+Euclidean), and $\mu_{\text{neigh}}$ denotes the closest centroid to $\mu_i$.
+Using this average, we define a threshold by introducing a tunable
+hyperparameter $t$. Any pair of centroids closer than $\text{AvgDist} / t$ is
+considered a conflicting cluster:
+\begin{equation}
+    \label{eq:conflicting-cluster}
+    C_i \text{ is conflicting} \iff d(\mu_i, \mu_{\text{neigh}}) < \frac{\text{AvgDist}}{t}
+\end{equation}
+
+\subsubsection{Mega Clusters}
+
+Mega clusters, on the other hand, represent large clusters that potentially
+include multiple natural groupings due to too few centroids in that region. To
+detect them, we first calculate the intra-cluster variance:
+\begin{equation}
+    \label{eq:cluster-var}
+    \text{Var}(C_i) = \frac{1}{\sum_{n=1}^{N} (r_{ni}) - 1} \sum_{n=1}^{N} r_{ni} \|x_n - \mu_i\|^2
+\end{equation}
+Here, $r_{ni}$ is a binary indicator showing whether point $x_n$ belongs to
+cluster i, and $\|x_n - \mu_i|^2$ measures the squared distance from the data
+point to the cluster centroid. The mega cluster is then defined as the cluster
+with the highest variance:
+\begin{equation}
+    \label{eq:mega-cluster}
+    C_{\max} = \underset{C_i}{\arg\max}\text{ Var}(C_i)
+\end{equation}
 
 %------------------------------------------------------------------------
 
 \subsection{The improved algorithm}\label{subsec:the-improved-algorithm}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+Based on the previously defined concepts of conflicting and mega clusters,
+İhsanoğlu and Zaval~\cite{Abdullah10601123} propose an extension to K-Means
+that iteratively relocates redundant centroids. The procedure is as follows:
+run K-Means (or K-Means++) as usual, identify conflicting and mega clusters,
+then iteratively move a centroid from a conflicting cluster to a randomly
+chosen point in the mega cluster. This process is repeated until no conflicting
+clusters remain or a maximum number of iterations is reached. The pseudocode
+below summarizes the method:
+
+\begin{algorithmic}[1]
+    \label{alg:imprv-kmeans}
+    \Require $X$, $k$, init\_func, max\_iter $ \in \mathbb{N}$, $t \in [1, \infty)$
+    \State $C \gets$ \texttt{init\_func}$(X, k)$
+    \State
+    \For{$i = 1$ to $max\_iter$}
+    \State $C,R \gets$ \texttt{converge\_to\_clusters}$(C, X, k)$
+    \State
+    \State $conflicts \gets$ \texttt{get\_conflicts}$(C, t)$
+    \State
+    \If{\texttt{len}$(conflicts) = 0$}
+    \State \textbf{break}
+    \EndIf
+    \State
+    \State $mega\_cl \gets$ \texttt{get\_mega\_cluster}$(X, k, R)$
+    \State
+    \State $conflict \gets$ \texttt{rand.choice}$(conflicts)$
+    \State $C[conflict] \gets$ \texttt{rand.choice}$(mega\_cl)$
+    \EndFor
+    \State \Return $C,~R$
+\end{algorithmic}
+
+This method introduces a lightweight post-optimization step aimed at overcoming
+poor initialization effects and improving cluster compactness and separation.
+While simple in implementation, İhsanoğlu and Zaval report noticeable
+improvements in clustering quality across various datasets.
 
 %------------------------------------------------------------------------
 
 \subsection{Challenges}\label{subsec:challenges}
 
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+While the improved method introduces additional statistical computations and
+iterations, it differs from traditional approaches in that it does not restart
+the entire clustering process. Instead, it incrementally refines an initial
+K-Means result~\cite{Abdullah10601123}. This targeted adjustment increases the
+likelihood of escaping poor local minima and reaching a more optimal clustering
+configuration—something that is often challenging to achieve through additional
+K-Means iterations alone~\cite{FRANTI201995}.
+
+A key limitation of the approach is its dependence on the choice of the
+threshold parameter~$t$. To ensure meaningful identification of conflicting
+clusters, $t$ must satisfy $t > 1$; otherwise, nearly all clusters would be
+classified as conflicting. Conversely, if $t$ is set too high, the algorithm
+may terminate prematurely without any adjustments.
+
+One potential strategy is to begin with a small value of $t$ and incrementally
+increase it until convergence is achieved before reaching the maximum number of
+iterations. However, this introduces ambiguity: early convergence could either
+indicate a well-chosen threshold or that K-Means had already produced a
+near-optimal solution, making it difficult to assess the effectiveness of $t$
+in isolation.
 
 %------------------------------------------------------------------------
 
