@@ -13,6 +13,8 @@
 \usepackage{braket}
 \usepackage{algpseudocodex}
 \usepackage{algorithmicx}
+\usepackage{multirow}
+\usepackage{booktabs}
 
 % If you comment hyperref and then uncomment it, you should delete
 % egpaper.aux before re-running latex.  (Or just hit 'q' on the first latex
@@ -491,6 +493,27 @@ This method introduces a lightweight post-optimization step aimed at overcoming
 poor initialization effects and improving cluster compactness and separation.
 While simple in implementation, İhsanoğlu and Zaval report noticeable
 improvements in clustering quality across various datasets.
+%------------------------------------------------------------------------
+
+\begin{table*}
+    \centering
+    \begin{tabular}{ll c c c c c c}
+        \toprule
+                                    &         & \multicolumn{2}{c}{K-Means} & \multicolumn{2}{c}{K-Means++} & \multicolumn{2}{c}{Improved}                                \\
+        \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
+                                    &         & Score                       & Variance                      & Score                        & Variance & Score  & Variance \\
+        \midrule
+        \multirow{2}{*}{S1-Dataset} & H-Score & 0.9209                      & 0.0008                        & 0.9504                       & 0.0006   & 0.9863 & 0        \\
+                                    & S-Score & 0.6121                      & 0.0017                        & 0.6540                       & 0.0015   & 0.7113 & 0        \\
+        \midrule
+        \multirow{2}{*}{A1-Dataset} & H-Score & 0.9181                      & 0.0010                        & 0.9492                       & 0.0006   & 0.9978 & 0        \\
+                                    & S-Score & 0.5162                      & 0.0009                        & 0.5454                       & 0.0006   & 0.5951 & 0        \\
+        \bottomrule
+    \end{tabular}
+    \vspace{5pt}
+    \caption{Comparison of clustering results on two data sets with H-score and S-score.}
+    \label{tab:clustering_comparison2}
+\end{table*}
 
 %------------------------------------------------------------------------
 
@@ -501,8 +524,8 @@ iterations, it differs from traditional approaches in that it does not restart
 the entire clustering process. Instead, it incrementally refines an initial
 K-Means result~\cite{Abdullah10601123}. This targeted adjustment increases the
 likelihood of escaping poor local minima and reaching a more optimal clustering
-configuration—something that is often challenging to achieve through additional
-K-Means iterations alone~\cite{FRANTI201995}.
+configuration — something that is often challenging to achieve through multiple
+K-Means runs alone~\cite{FRANTI201995}.
 
 A key limitation of the approach is its dependence on the choice of the
 threshold parameter~$t$. To ensure meaningful identification of conflicting
@@ -517,9 +540,46 @@ indicate a well-chosen threshold or that K-Means had already produced a
 near-optimal solution, making it difficult to assess the effectiveness of $t$
 in isolation.
 
+%TODO: maybe graphic?
+
 %------------------------------------------------------------------------
 
 \section{Results and Performance Evaluation}\label{sec:results-and-performance-evaluation}
+
+In this section, we evaluate the performance of the improved algorithm by
+comparing it to K-Means and K-Means++ on several datasets.
+
+%------------------------------------------------------------------------
+
+\subsection{Methodology}\label{subsec:methodology}
+
+To ensure reliable results, we conduct 1,000 independent runs of each algorithm
+across multiple datasets. The performance of the algorithms is measured using
+two common clustering evaluation metrics: homogeneity and silhouette scores.
+For each dataset, we compute the mean and variance of these scores to assess
+both the quality and stability of the clustering results.
+
+\subsubsection{Datasets}
+
+The following synthetic datasets are used for evaluation:
+\begin{itemize}
+    \item A
+    \item S
+    \item Birch
+    \item Unbalance
+\end{itemize}
+
+\subsubsection{Metrics}
+
+We use the following metrics to evaluate clustering performance:
+\begin{itemize}
+    \item \textbf{Homogeneity Score:} Measures how well each cluster contains data points from a single ground truth class.
+    \item \textbf{Silhouette Score:} Assesses the similarity of each data point to its own cluster relative to other clusters, providing insight into cluster cohesion and separation.
+\end{itemize}
+
+%------------------------------------------------------------------------
+
+\subsection{Measurement results}\label{subsec:measurement-results}
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
 incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
@@ -530,34 +590,7 @@ culpa qui officia deserunt mollit anim id est laborum.
 
 %------------------------------------------------------------------------
 
-\subsection{Metrics}
-
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
-
-%------------------------------------------------------------------------
-
-\subsection{Case Study: Mall Customer Segmentation}
-
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
-
-%------------------------------------------------------------------------
-
-\subsection{Measurements on different datasets}
-
-Lorem ipsum odor amet, consectetuer adipiscing elit. Tempor a proin quam cursus
-tincidunt id fringilla. Netus hac suscipit maximus hendrerit luctus massa.
-Hendrerit mollis nibh curabitur magnis netus ad diam. Sapien per conubia id
-primis auctor. Porta metus feugiat tincidunt amet suscipit habitasse.
-
-%------------------------------------------------------------------------
-
-\section{Conclusion and Future Work}\label{sec:conclusion-and-future-work}
+\section{Conclusion}\label{sec:conclusion}
 
 Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor
 incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
