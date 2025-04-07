@@ -1,15 +1,16 @@
 import random
 import re
 import numpy as np
-from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import homogeneity_score
 from sklearn.metrics import silhouette_score
 import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 # Constants
 # threshold
-t = 1.5
+t = 1.2
 
 
 # Plots
@@ -229,68 +230,89 @@ def k_means_improved(data_points, k, init_func, random_state=42, iterations=10):
 
     return centroids, clusters
 
+# read data
+s1_data = pd.read_csv("data/S-Sets/s4.txt", header=None, sep='\s+')
+s1_data.columns = ['x', 'y']
 
-data = pd.read_csv("data/worldcities.csv", na_values="-")
-# ames_housing = ames_housing.drop(columns="Id")
+s1_labels = pd.read_csv("data/S-Sets/s-originals/s4-label.pa",
+                        header=None,
+                        skiprows=5,
+                        names=["label"])
 
-# ID-Spalte hinzufügen
-# ames_housing['Id'] = range(1, len(ames_housing) + 1)
+assert len(s1_labels) == len(s1_data)
 
-china_data = data[data['iso3'] == 'CHN']
+# Format data
+X = s1_data[['x', 'y']].dropna()
+true_labels = s1_labels["label"].tolist()
 
-print(china_data.info())
-
-features = ['lng', 'lat']
-X = china_data[features].dropna()
-
-scaler = StandardScaler()
-X_scaled = scaler.fit_transform(X)
-
-# Anzahl der Wiederholungen
+dataset_name = "S4 - S-Sets"
 num_runs = 10
-k = 8
+k = 15
 
-# Listen zum Speichern der Ergebnisse
-silhouette_scores_kmeans = []
-silhouette_scores_improved = []
-silhouette_differences = []
+# Prepare results lists
+silhouette_scores = {"kmeans": [], "improved": [], "kmeans++": []}
+homogeneity_scores = {"kmeans": [], "improved": [], "kmeans++": []}
 
-# Wiederholung der Messungen
-for i in range(num_runs):
-    print("Run: ", i + 1)
-    # Zufälligen Zustand für die Initialisierung generieren
-    rand_state = random.randint(0, 1000)
+# Method configuration: (name, function, initializer)
+methods = [
+    ("kmeans", k_means, rand_init),
+    ("kmeans++", k_means, kmeans_plus_plus_init),
+    ("improved", k_means_improved, rand_init)
+]
 
-    # Standard K-Means ausführen
-    centroids, cluster_labels = k_means(X_scaled, k, rand_init, rand_state)
+# Measurements
+for i in tqdm(range(num_runs), desc="Runs", ncols=100):
+    rand_state = i
 
-    # Verbesserte K-Means ausführen
-    centroids_imp, cluster_labels_imp = k_means_improved(X_scaled, k, rand_init, rand_state)
+    for name, method_func, init_func in methods:
+        centroids, labels = method_func(X, k, init_func, rand_state)
 
-    # Silhouette-Scores berechnen
-    silhouette_kmeans = silhouette_score(X, cluster_labels)
-    silhouette_improved = silhouette_score(X, cluster_labels_imp)
-    difference = silhouette_improved - silhouette_kmeans
+        silhouette = silhouette_score(X, labels)
+        homogeneity = homogeneity_score(true_labels, labels)
 
-    # Ergebnisse speichern
-    silhouette_scores_kmeans.append(silhouette_kmeans)
-    silhouette_scores_improved.append(silhouette_improved)
-    silhouette_differences.append(difference)
+        silhouette_scores[name].append(silhouette)
+        homogeneity_scores[name].append(homogeneity)
 
-# Durchschnittliche Ergebnisse berechnen
-average_kmeans = np.mean(silhouette_scores_kmeans)
-average_improved = np.mean(silhouette_scores_improved)
-average_difference = np.mean(silhouette_differences)
 
-# Ergebnisse ausgeben
-print("Durchschnittlicher K-Means Silhouette-Score: " + str(average_kmeans))
-print("Durchschnittlicher verbesserter K-Means Silhouette-Score: " + str(average_improved))
-print("Durchschnittliche Differenz: " + str(average_difference))
+# Calculation and output of average scores as well as differences and variances
+# Output of metadata
+print(f"\n=== Dataset: {dataset_name} ===")
+print(f"⟶ k: {k}")
+print(f"⟶ Number of runs: {num_runs}")
+print(f"⟶ Threshold: {t}")
 
-# Standard K-Means ausführen
-centroids, cluster_labels = k_means(X_scaled, k, rand_init, 23)
-# Verbesserte K-Means ausführen
-centroids_imp, cluster_labels_imp = k_means_improved(X_scaled, k, rand_init, 23)
 
-plot_kmeans_results(X.values, cluster_labels, scaler.inverse_transform(centroids), "KMeans Result")
-plot_kmeans_results(X.values, cluster_labels_imp, scaler.inverse_transform(centroids_imp), "KMeans imp Result")
+for name in silhouette_scores:
+    avg_sil = np.mean(silhouette_scores[name])
+    avg_hom = np.mean(homogeneity_scores[name])
+
+    # Calculate differences (nominal and percentage)
+    if name == "improved":
+        sil_diff = avg_sil - np.mean(silhouette_scores["kmeans++"])
+        hom_diff = avg_hom - np.mean(homogeneity_scores["kmeans++"])
+
+        sil_diff_percent = (sil_diff / np.mean(silhouette_scores["kmeans++"])) * 100
+        hom_diff_percent = (hom_diff / np.mean(homogeneity_scores["kmeans++"])) * 100
+    else:
+        sil_diff = hom_diff = sil_diff_percent = hom_diff_percent = 0
+
+    # Calc variance
+    var_sil = np.var(silhouette_scores[name])
+    var_hom = np.var(homogeneity_scores[name])
+
+    # Output of the results
+    print(f"\n=== {name.upper()} ===")
+    print(f"⟶ Average Silhouette-Score: {avg_sil:.4f}")
+    print(f"⟶ Average Homogeneity-Score: {avg_hom:.4f}")
+
+    # Differences (nominal and percentage)
+    if name == "improved":
+        print(f"⟶ Difference in Silhouette-Score (nominal) vs. K-Means++: {sil_diff:.4f}")
+        print(f"⟶ Difference in Homogeneity-Score (nominal) vs. K-Means++: {hom_diff:.4f}")
+        print(f"⟶ Difference in Silhouette-Score (percentage) vs. K-Means++: {sil_diff_percent:.2f}%")
+        print(f"⟶ Difference in Homogeneity-Score (percentage) vs. K-Means++: {hom_diff_percent:.2f}%")
+
+    # Variance
+    print(f"⟶ Variance of the Silhouette-Scores: {var_sil:.4f}")
+    print(f"⟶ Variance of the Homogeneity-Scores: {var_hom:.4f}")
+

@@ -1,0 +1,28 @@
+Runs: 100%|███████████████████████████████████████████████████| 1000/1000 [1:16:00<00:00,  4.56s/it]
+
+=== Dataset: A3 - A-Sets ===
+⟶ k: 50
+⟶ Number of runs: 1000
+⟶ Threshold: 1.5
+
+=== KMEANS ===
+⟶ Average Silhouette-Score: 0.5160
+⟶ Average Homogeneity-Score: 0.9360
+⟶ Variance of the Silhouette-Scores: 0.0004
+⟶ Variance of the Homogeneity-Scores: 0.0002
+
+=== IMPROVED ===
+⟶ Average Silhouette-Score: 0.5999
+⟶ Average Homogeneity-Score: 0.9982
+⟶ Difference in Silhouette-Score (nominal) vs. K-Means++: 0.0560
+⟶ Difference in Homogeneity-Score (nominal) vs. K-Means++: 0.0395
+⟶ Difference in Silhouette-Score (percentage) vs. K-Means++: 10.30%
+⟶ Difference in Homogeneity-Score (percentage) vs. K-Means++: 4.12%
+⟶ Variance of the Silhouette-Scores: 0.0000
+⟶ Variance of the Homogeneity-Scores: 0.0000
+
+=== KMEANS++ ===
+⟶ Average Silhouette-Score: 0.5439
+⟶ Average Homogeneity-Score: 0.9587
+⟶ Variance of the Silhouette-Scores: 0.0003
+⟶ Variance of the Homogeneity-Scores: 0.0001
