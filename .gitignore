@@ -6,7 +6,3 @@ out
 # latexindent
 indent.log
 *.bak[0-9]*
-
-# graphics
-*.svg
-*.png
