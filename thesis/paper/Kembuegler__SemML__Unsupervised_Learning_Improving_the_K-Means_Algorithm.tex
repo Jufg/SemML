@@ -167,14 +167,15 @@ hand, encompass algorithms such as \textit{K-Means}, \textit{Genetic
 
 \subsection{Types of Clusters}\label{subsec:types-of-clusters}
 
-Kapil Joshi \etal~\cite{Joshi2015} divide clusters into four categories. In the
-general literature on cluster analysis, it is discussed that the choice of the
-appropriate algorithm depends on the underlying cluster
-structure~\cite{Ezugwu2022104743}. For example, density-based methods such as
-DBSCAN are particularly suitable for non-convex clusters~\cite{Bhargav2016},
-while k-Means works particularly well for spherical
-clusters~\cite{Jain2010651}. Definitions of cluster types according to Kapil
-Joshi \etal~\cite{Joshi2015}:
+Kapil Joshi \etal~\cite{Joshi2015} categorize clusters into four distinct
+types. In general, the effectiveness of a clustering algorithm heavily depends
+on the nature of these underlying structures~\cite{Ezugwu2022104743}. For
+instance, density-based algorithms like DBSCAN are particularly effective when
+dealing with non-convex cluster shapes~\cite{Bhargav2016}, whereas k-Means
+tends to perform best on well-separated, spherical clusters~\cite{Jain2010651}.
+
+According to Kapil Joshi \etal~\cite{Joshi2015}, the four types of clusters are
+defined as follows:
 \begin{itemize}
     \item\textbf{Well-separated clusters:} A point in a cluster is closer or more similar to any point in the same cluster
           as to a point in another cluster.
@@ -260,8 +261,7 @@ algorithm, illustrated in Fig.~\ref{fig:kmeans-procedure}, proceeds as follows:
     \EndFor
     \Until{no data point changes its assigned cluster}
 \end{algorithmic}
-While the pseudocode above reflects the standard implementation (often referred
-to as Lloyd’s algorithm), they differ subtly in their objectives and
+While the pseudocode above reflects the standard implementation, they differ subtly in their objectives and
 approaches. For example, unlike Lloyd's algorithm, which updates centroids only
 after all data points have been reassigned, MacQueen's algorithm performs
 incremental updates, adjusting the affected cluster’s centroid immediately when
@@ -373,7 +373,7 @@ selecting the best result based on a predefined criterion. Several heuristics
 have been proposed to enhance initialization:
 \begin{itemize}
     \item \textbf{Random points:} Centroids are chosen randomly from the dataset.
-    \item \textbf{Furthest point heuristic:} The first centroid is chosen randomly, and later ones are placed as far as possible from existing centroids.
+    \item \textbf{Furthest point heuristic:} The first centroid is chosen randomly, and subsequent centroids are selected to be as far as possible from those already chosen.
     \item \textbf{Sorting heuristic:} Data points are sorted by a criterion, \eg, projection along a principal component and used for initialization.
     \item \textbf{Density-based:} This method selects centroids in high-density regions.
     \item \textbf{Projection-based:} A dimensionality reduction technique identifies representative points for initialization.
@@ -397,8 +397,8 @@ outlined in the following pseudocode, proceeds as follows:
     \Require $X$, $k$
     \State Randomly select the first centroid $\mu_1$ from $X$
     \For{$i = 2$ to $k$}
-    \State Compute the distance $d(x_j, \mu_{\text{neigh}})$ from each $x_j\in X$ to the nearest centroid $\mu_{\text{neigh}}$
-    \State Select the next centroid $\mu_i$ with probability proportional to $d(x_j, \mu_{\text{neigh}})^2$
+    \State Compute the distance $D_j=d(x_j, \mu_{\text{neigh}})$ from each $x_j\in X$ to the nearest centroid $\mu_{\text{neigh}}$
+    \State Select the next centroid $\mu_i$ with probability proportional to ${D_j}^2$
     \EndFor
 \end{algorithmic}
 K-Means++ generally improves clustering performance by offering more effective
@@ -514,26 +514,26 @@ below summarizes the method:
     \centering
     \begin{tabular}{ll c c c c c c}
         \toprule
-                                             &                  & \multicolumn{2}{c}{\textbf{K-Means}} & \multicolumn{2}{c}{\textbf{K-Means++}} & \multicolumn{2}{c}{\textbf{Improved}}                                                             \\
+                                             &                  & \multicolumn{2}{c}{\textbf{K-Means}} & \multicolumn{2}{c}{\textbf{K-Means++}} & \multicolumn{2}{c}{\textbf{Improved}}                                                              \\
         \cmidrule(lr){3-4} \cmidrule(lr){5-6} \cmidrule(lr){7-8}
-                                             &                  & \textbf{Score}                       & \textbf{Variance}                      & \textbf{Score}                        & \textbf{Variance} & \textbf{Score}  & \textbf{Variance}   \\
+                                             &                  & \textbf{Score}                       & \textbf{Variance}                      & \textbf{Score}                        & \textbf{Variance} & \textbf{Score}  & \textbf{Variance}    \\
         \midrule
-        \multirow{2}{*}{\textbf{S1-Dataset}} & \textbf{H-Score} & 0.9209                               & 0.0008                                 & 0.9504                                & 0.0006            & \textbf{0.9863} & \textbf{$<10^{-4}$} \\
-                                             & \textbf{S-Score} & 0.6121                               & 0.0017                                 & 0.6540                                & 0.0015            & \textbf{0.7113} & \textbf{$<10^{-4}$} \\
+        \multirow{2}{*}{\textbf{S1-Dataset}} & \textbf{H-Score} & 0.9209                               & 0.0008                                 & 0.9504                                & 0.0006            & \textbf{0.9863} & $\mathbf{\approx 0}$ \\
+                                             & \textbf{S-Score} & 0.6121                               & 0.0017                                 & 0.6540                                & 0.0015            & \textbf{0.7113} & $\mathbf{\approx 0}$ \\
         \midrule
-        \multirow{2}{*}{\textbf{S3-Dataset}} & \textbf{H-Score} & 0.7656                               & 0.0003                                 & 0.7701                                & 0.0003            & \textbf{0.7941} & \textbf{$<10^{-4}$} \\
-                                             & \textbf{S-Score} & 0.4609                               & 0.0003                                 & 0.4642                                & 0.0003            & \textbf{0.4915} & \textbf{$<10^{-4}$} \\
+        \multirow{2}{*}{\textbf{S3-Dataset}} & \textbf{H-Score} & 0.7656                               & 0.0003                                 & 0.7701                                & 0.0003            & \textbf{0.7941} & $\mathbf{\approx 0}$ \\
+                                             & \textbf{S-Score} & 0.4609                               & 0.0003                                 & 0.4642                                & 0.0003            & \textbf{0.4915} & $\mathbf{\approx 0}$ \\
         \midrule
-        \multirow{2}{*}{\textbf{A1-Dataset}} & \textbf{H-Score} & 0.9181                               & 0.0010                                 & 0.9492                                & 0.0006            & \textbf{0.9978} & \textbf{$<10^{-4}$} \\
-                                             & \textbf{S-Score} & 0.5162                               & 0.0009                                 & 0.5454                                & 0.0006            & \textbf{0.5951} & \textbf{$<10^{-4}$} \\
+        \multirow{2}{*}{\textbf{A1-Dataset}} & \textbf{H-Score} & 0.9181                               & 0.0010                                 & 0.9492                                & 0.0006            & \textbf{0.9978} & $\mathbf{\approx 0}$ \\
+                                             & \textbf{S-Score} & 0.5162                               & 0.0009                                 & 0.5454                                & 0.0006            & \textbf{0.5951} & $\mathbf{\approx 0}$ \\
         \midrule
-        \multirow{2}{*}{\textbf{A3-Dataset}} & \textbf{H-Score} & 0.9360                               & 0.0002                                 & 0.9587                                & 0.0001            & \textbf{0.9982} & \textbf{$<10^{-4}$} \\
-                                             & \textbf{S-Score} & 0.5160                               & 0.0004                                 & 0.5439                                & 0.0003            & \textbf{0.5999} & \textbf{$<10^{-4}$} \\
+        \multirow{2}{*}{\textbf{A3-Dataset}} & \textbf{H-Score} & 0.9360                               & 0.0002                                 & 0.9587                                & 0.0001            & \textbf{0.9982} & $\mathbf{\approx 0}$ \\
+                                             & \textbf{S-Score} & 0.5160                               & 0.0004                                 & 0.5439                                & 0.0003            & \textbf{0.5999} & $\mathbf{\approx 0}$ \\
         \bottomrule
     \end{tabular}
     \vspace{5pt}
     \caption{
-        Clustering performance on four synthetic datasets~\cite{ClusteringDatasets}, evaluated using Homogeneity (H-Score) and Silhouette (S-Score). Each method was run 1,000 times; mean and variance are reported. The improved method shows consistently higher scores and near-zero variances, indicating stable convergence. The data is publicly available here: \href{https://cs.uef.fi/sipu/datasets/}{https://cs.uef.fi/sipu/datasets/}.
+        Clustering performance on four synthetic datasets~\cite{ClusteringDatasets}, evaluated using Homogeneity (H-Score) and Silhouette (S-Score). Each method was run 1,000 times; mean and variance are reported. The improved method shows consistently higher scores and near-zero (below $10^{-4}$) variances, indicating stable convergence. The data is publicly available here: \href{https://cs.uef.fi/sipu/datasets/}{https://cs.uef.fi/sipu/datasets/}.
     }
     \label{tab:clustering_comparison}
 \end{table*}
@@ -584,8 +584,8 @@ scores to assess both the quality and stability of the clustering results.
 
 \subsubsection{Datasets}
 
-The following synthetic datasets from~\cite{ClusteringDatasets} are used to
-evaluate clustering performance:
+The following synthetic datasets, as introduced in~\cite{ClusteringDatasets},
+are used to evaluate clustering performance:
 
 \begin{itemize}
     \item \textbf{A-Sets:} Artificial datasets with a large number of well-separated clusters. They test the algorithm’s ability to accurately partition clearly defined groups.
@@ -654,7 +654,6 @@ evaluation on real-world datasets is required, the approach provides a
 lightweight refinement step that can improve K-Means results without fully
 reinitializing the algorithm.
 
-% TODO: a third point?
 Future work could explore adaptive threshold tuning and application to
 high-dimensional or real-world datasets.
 

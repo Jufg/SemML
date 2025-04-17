@@ -231,10 +231,10 @@ def k_means_improved(data_points, k, init_func, random_state=42, iterations=10):
     return centroids, clusters
 
 # read data
-s1_data = pd.read_csv("data/S-Sets/s4.txt", header=None, sep='\s+')
+s1_data = pd.read_csv("data/S-Sets/s3.txt", header=None, sep='\s+')
 s1_data.columns = ['x', 'y']
 
-s1_labels = pd.read_csv("data/S-Sets/s-originals/s4-label.pa",
+s1_labels = pd.read_csv("data/S-Sets/s-originals/s3-label.pa",
                         header=None,
                         skiprows=5,
                         names=["label"])
@@ -313,6 +313,6 @@ for name in silhouette_scores:
         print(f"⟶ Difference in Homogeneity-Score (percentage) vs. K-Means++: {hom_diff_percent:.2f}%")
 
     # Variance
-    print(f"⟶ Variance of the Silhouette-Scores: {var_sil:.4f}")
-    print(f"⟶ Variance of the Homogeneity-Scores: {var_hom:.4f}")
+    print(f"⟶ Variance of the Silhouette-Scores: {var_sil}")
+    print(f"⟶ Variance of the Homogeneity-Scores: {var_hom}")
 

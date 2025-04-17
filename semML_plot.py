@@ -408,6 +408,9 @@ def k_means_improved(data_points, k, init_func, random_state=42, iterations=10):
         conflicts = get_conflicts(centroids)
         mega_cluster = get_mega_cluster(k, clusters, data_points)
 
+        if i == 0:
+            plot_kmeans_results(std_data, clusters, centroids, "K-Means Result")
+
         print("Conflicting clusters: {}".format(conflicts))
         if len(conflicts) == 0:
             break
@@ -426,50 +429,88 @@ def k_means_improved(data_points, k, init_func, random_state=42, iterations=10):
     return centroids, clusters, init_centroids, create_clusters(init_centroids, k, data_points)
 
 
+def k_means_improved_2(data_points, k, init_func, random_state=42, iterations=10):
+    data_points = np.array(data_points)
+    n_samples = data_points.shape[0]
+
+    # Ensure that k is never bigger than the number of points
+    k = min(k, n_samples)
+
+    # Initialise cluster centroids wth the given init-function
+    centroids = data_points[init_func(data_points, k, random_state)]
+
+    clusters = []
+
+    for i in range(iterations):
+        clusters = create_clusters(centroids, k, data_points)
+
+        conflicts = get_conflicts(centroids)
+        mega_cluster = get_mega_cluster(k, clusters, data_points)
+
+        print("Conflicting clusters: {}".format(conflicts))
+        if len(conflicts) == 0:
+            break
+
+        plot_clusters_with_conflicts(centroids, clusters, conflicts, data_points,
+                                     "Cluster with conflicts; iteration: {}".format(i))
+        plot_clusters_with_mega_cluster(centroids, clusters, mega_cluster, data_points,
+                                        "Mega cluster; iteration: {}".format(i))
+
+        conflicting_centroid = random.choice(conflicts)
+        random_instance = random.choice(mega_cluster)
+
+        if i < iterations - 1:
+            centroids[conflicting_centroid] = random_instance
+
+    init_centroids = centroids
+    centroids, clusters = converge_to_clusters(centroids, k, data_points, i)
+
+    return centroids, clusters, init_centroids, create_clusters(init_centroids, k, data_points)
+
+
+# Generate the data
+data, _ = generate_data(clusters_spec)
+std_data, scaler = standardize_data(data)
+flat_data = [(x, y) for x_array, y_array in std_data for x, y in zip(x_array, y_array)]
 # Main Code
 if __name__ == "__main__":
     rand_state = random.randint(0, 1000)
-
-    # Generate the data
-    data, _ = generate_data(clusters_spec)
-    std_data, scaler = standardize_data(data)
-    flat_data = [(x, y) for x_array, y_array in std_data for x, y in zip(x_array, y_array)]
 
     # Define colormap for Brown Scale
     cmap = matplotlib.colormaps["YlOrBr"]
 
     # Plot the data
-    plot_data(data, cmap, title="Scatter Plot of Bakery Data")
+    # plot_data(data, cmap, title="Scatter Plot of Bakery Data")
 
     # Plot the clusters with boundaries
-    plot_clusters(data, clusters_spec, get_cluster_colors(len(clusters_spec)), cmap, title="Clustered Bakery Products")
+    # plot_clusters(data, clusters_spec, get_cluster_colors(len(clusters_spec)), cmap, title="Clustered Bakery Products")
 
     # Calculate Clusters with k-means
-    centroids, clusters, init_centroids, init_clusters = k_means(flat_data,
-                                                                 len(clusters_spec),
-                                                                 rand_init,
-                                                                 rand_state)
+    # centroids, clusters, init_centroids, init_clusters = k_means(flat_data,
+    #                                                             len(clusters_spec),
+    #                                                             rand_init,
+    #                                                             rand_state)
 
     # Plot calculated clusters
-    plot_kmeans_results(data, init_clusters, scaler.inverse_transform(init_centroids), title="K-Means Init")
-    plot_kmeans_results(data, clusters, scaler.inverse_transform(centroids), title="K-Means Clustering Results")
+    # plot_kmeans_results(data, init_clusters, scaler.inverse_transform(init_centroids), title="K-Means Init")
+    # plot_kmeans_results(data, clusters, scaler.inverse_transform(centroids), title="K-Means Clustering Results")
 
     # Calculate Clusters with K-means++
-    centroids_plus, clusters_plus, init_centroids_plus, init_clusters_plus = k_means(flat_data,
-                                                                                     len(clusters_spec),
-                                                                                     kmeans_plus_plus_init,
-                                                                                     rand_state)
+    # centroids_plus, clusters_plus, init_centroids_plus, init_clusters_plus = k_means(flat_data,
+    #                                                                              len(clusters_spec),
+    #                                                                               kmeans_plus_plus_init,
+    #                                                                                rand_state)
 
     # Plot calculated clusters with K-means++
-    plot_kmeans_results(data, init_clusters_plus, scaler.inverse_transform(init_centroids_plus), title="K-Means++ Init")
-    plot_kmeans_results(data, clusters_plus, scaler.inverse_transform(centroids_plus),
-                        title="K-Means++ Clustering Results")
+    # plot_kmeans_results(data, init_clusters_plus, scaler.inverse_transform(init_centroids_plus), title="K-Means++ Init")
+    # plot_kmeans_results(data, clusters_plus, scaler.inverse_transform(centroids_plus),
+    #                    title="K-Means++ Clustering Results")
 
     # Calculate Clusters with K-means improved
-    centroids_imp, clusters_imp, init_centroids_imp, init_clusters_imp = k_means_improved(flat_data,
-                                                                                          len(clusters_spec),
-                                                                                          rand_init,
-                                                                                          rand_state)
+    centroids_imp, clusters_imp, init_centroids_imp, init_clusters_imp = k_means_improved_2(flat_data,
+                                                                                            len(clusters_spec),
+                                                                                            rand_init,
+                                                                                            rand_state)
 
     # Plot calculated clusters with K-means improved
     plot_kmeans_results(data, init_clusters_imp, scaler.inverse_transform(init_centroids_imp),

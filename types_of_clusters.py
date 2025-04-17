@@ -8,8 +8,10 @@ from sklearn_extra.cluster import KMedoids
 from sklearn.cluster import AgglomerativeClustering
 import numpy as np
 
+
 def sanitize_filename(filename):
     return re.sub(r'[<>:"/\\|?*\n\r\t]', '', filename).strip()
+
 
 # Well-separated Clusters
 # Generate a data set with clearly separated clusters
@@ -34,7 +36,7 @@ title = "Well-separated Clusters (K-Medoids)"
 plt.title(title)
 plt.legend(loc='best')
 
-plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300, pad_inches=0, bbox_inches='tight')
 plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
 plt.show()
 
@@ -55,7 +57,7 @@ title = 'Center-based Clusters (K-Means)'
 plt.title(title)
 plt.legend()
 
-plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300, pad_inches=0, bbox_inches='tight')
 plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
 plt.show()
 
@@ -77,7 +79,7 @@ title = 'Contiguous Clusters (Hierarchical Clustering - Single Linkage)'
 plt.title(title)
 plt.legend(loc='best')
 
-plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300, pad_inches=0, bbox_inches='tight')
 plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
 plt.show()
 
@@ -115,6 +117,6 @@ title = 'Density-based Clusters (DBSCAN) with Noise'
 plt.title(title)
 plt.legend(loc='best')
 
-plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300)
+plt.savefig("plots/png/" + sanitize_filename(title) + ".png", format="png", dpi=300, pad_inches=0, bbox_inches='tight')
 plt.savefig("plots/svg/" + sanitize_filename(title) + ".svg", format="svg")
 plt.show()
